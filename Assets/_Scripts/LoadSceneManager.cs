@@ -1,9 +1,10 @@
-﻿using Assets._Scripts.Enemy;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using Eflatun.SceneReference;
+using System;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 
 namespace Assets._Scripts
@@ -23,6 +24,8 @@ namespace Assets._Scripts
         private async void Start()
         {
             AsyncOperationHandle h1 = Addressables.LoadSceneAsync(_level_1.Name, LoadSceneMode.Additive);
+            //AsyncInstantiateOperation h1 = LoadScene(_level_1.Name);
+
             _activeScene = SceneManager.GetSceneByName(_level_1.Name);
 
             if (h1.IsDone)
@@ -36,7 +39,6 @@ namespace Assets._Scripts
             await UniTask.Delay(1000);
 
             AsyncOperationHandle h2 =  Addressables.LoadSceneAsync(_level2.Name, LoadSceneMode.Additive);
-
             AsyncOperationHandle h3 = Addressables.UnloadSceneAsync(h1);
 
             _activeScene = SceneManager.GetSceneByName(_level2.Name);
@@ -46,16 +48,7 @@ namespace Assets._Scripts
                 SceneManager.SetActiveScene(_activeScene);
             }
 
-            //Debug.Log(_playerPrefab.IsValid());
-            //if (_playerPrefab.IsValid())
-            //{
-            //    _playerPrefab.ReleaseAsset();
-            //}
 
-            //if (_playerPrefab.IsValid())
-            //{
-            //    _enemyPrefab.ReleaseAsset();
-            //}
         }
 
         private void OnDestroy()
@@ -69,6 +62,29 @@ namespace Assets._Scripts
             {
                 _enemyPrefab.ReleaseAsset();
             }
+        }
+
+        private async UniTask LoadScene(string name)
+        {
+            try
+            {
+                AsyncOperationHandle<SceneInstance> h1 = Addressables.LoadSceneAsync(name, LoadSceneMode.Additive);
+
+                await h1.ToUniTask();
+
+                var sc = h1.Result.Scene;
+                _activeScene = SceneManager.GetSceneByName(name);
+
+                if (h1.IsDone)
+                {
+                    SceneManager.SetActiveScene(_activeScene);
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.LogError($"Исключение при загрузке сцены {name}: {ex.Message}");
+            }
+            
         }
 
         private async UniTask PlayerInit()
