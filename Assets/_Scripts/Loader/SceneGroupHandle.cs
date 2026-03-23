@@ -7,9 +7,6 @@ namespace Assets._Scripts.Loader
     public struct SceneGroupHandle
     {
         public string groupName;
-        public List<SceneHandleWrapper> scenesGroups;
-
-
-
+        public List<SceneWrapper> scenesNames;
     }
 }

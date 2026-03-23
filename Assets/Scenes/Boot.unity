@@ -1130,7 +1130,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5045343128451865396}
-  - component: {fileID: 8792810696007797541}
   - component: {fileID: 8792810696007797542}
   m_Layer: 0
   m_Name: '[Container]'
@@ -1154,36 +1153,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8792810696007797541
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 639390843300792622}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c00a4455e89c00408ce8249e1247db4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets._Scripts.LoadSceneManager
-  _playerPrefab:
-    m_AssetGUID: 4d0216d878317f649adce319b5c357bf
-    m_SubObjectName: 
-    m_SubObjectType: 
-    m_SubObjectGUID: 
-    m_EditorAssetChanged: 0
-  _enemyPrefab:
-    m_AssetGUID: e04e9d4c95e97e245b4778e9ce2f1547
-    m_SubObjectName: 
-    m_SubObjectType: 
-    m_SubObjectGUID: 
-    m_EditorAssetChanged: 0
-  _level_1:
-    asset: {fileID: 102900000, guid: 99c9720ab356a0642a771bea13969a05, type: 3}
-    guid: 99c9720ab356a0642a771bea13969a05
-  _level2:
-    asset: {fileID: 102900000, guid: 8199c8d422e11ba439476a66ee60675d, type: 3}
-    guid: 8199c8d422e11ba439476a66ee60675d
 --- !u!114 &8792810696007797542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1202,25 +1171,13 @@ MonoBehaviour:
   autoInjectGameObjects: []
   _sceneGroupHandle:
   - groupName: Level_1_Group
-    scenesGroups:
-    - _sceneName: Level_1
-      _scene:
-        asset: {fileID: 102900000, guid: 99c9720ab356a0642a771bea13969a05, type: 3}
-        guid: 99c9720ab356a0642a771bea13969a05
-    - _sceneName: HUD_1
-      _scene:
-        asset: {fileID: 102900000, guid: 516c17abd2c89834fb5b12487a3edba0, type: 3}
-        guid: 516c17abd2c89834fb5b12487a3edba0
+    scenes:
+    - sceneName: 
+      scene:
+        asset: {fileID: 0}
+        guid: 00000000000000000000000000000000
   - groupName: Level_2_Group
-    scenesGroups:
-    - _sceneName: Level_2
-      _scene:
-        asset: {fileID: 102900000, guid: 8199c8d422e11ba439476a66ee60675d, type: 3}
-        guid: 8199c8d422e11ba439476a66ee60675d
-    - _sceneName: HUD_2
-      _scene:
-        asset: {fileID: 102900000, guid: 2ed8279431211eb46be70dbbb1c7d01a, type: 3}
-        guid: 2ed8279431211eb46be70dbbb1c7d01a
+    scenes: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

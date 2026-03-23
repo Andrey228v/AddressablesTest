@@ -1,66 +1,94 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
+
 namespace Assets._Scripts.Loader
 {
-    public class LoadManager
+    public class LoadManager : IDisposable
     {
         //List который содержит все загруженные сцены.
         private List<AsyncOperationHandle> _loadsScenes; // ???
+
+        public void Dispose()
+        {
+            foreach (var handle in _loadsScenes) 
+            {
+                if (handle.IsValid())
+                {
+                    Addressables.Release(handle);
+                }
+            }
+
+            _loadsScenes.Clear();
+        }
 
         public async void LoadScene(SceneGroupHandle sceneGroup)
         {
 
             await ShowLoadScreen();
             await UnloadCurrentContent();
-            await LoadNewContent();
+            await LoadNewContent(sceneGroup);
             await PrepareToTransition();
             await HideLoadScreen();
 
         }
 
-        public async UniTask ShowLoadScreen()
+        private async UniTask ShowLoadScreen()
         {
 
         }
 
-        public async UniTask UnloadCurrentContent()
+        private async UniTask UnloadCurrentContent()
         {
-            foreach (var loadedScene in _loadsScenes)
+            foreach (var loadedSceneHandle in _loadsScenes)
             {
-                AsyncOperationHandle handle =  Addressables.UnloadSceneAsync(loadedScene);
 
-                await handle.ToUniTask();
+                var progress = Progress.Create<float>(p =>
+                {
+                    Debug.Log($"Прогресс выгрузки: {p * 100:F0}%");
+                });
+
+                await Addressables.UnloadSceneAsync(loadedSceneHandle).ToUniTask(progress);
                 // фильтр по сценам, которые надо или не надо выгружать...
                 // тут необходимо ожидать выгрузку сцены
 
                 //await handle
 
-                // освободить память...
+                Addressables.Release(loadedSceneHandle); // ???
             }
+
+            await Resources.UnloadUnusedAssets();
+
+            System.GC.Collect(); // надо ли это - пока не знаю. Тестим...
+
+            Debug.Log("Уровень полностью выгружен");
+
         }
 
-        public async UniTask LoadNewContent()
+        private async UniTask LoadNewContent(SceneGroupHandle sceneGroup)
+        {
+            foreach(var scene in sceneGroup.scenes)
+            {
+                //AsyncOperationHandle
+                await Addressables.LoadSceneAsync(scene).ToUniTask();
+            }
+
+        }
+
+        private async UniTask PrepareToTransition()
         {
 
         }
 
-        public async UniTask PrepareToTransition()
+        private async UniTask HideLoadScreen()
         {
 
         }
 
-        public async UniTask HideLoadScreen()
-        {
-
-        }
 
     }
 }
