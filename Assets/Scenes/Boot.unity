@@ -547,8 +547,8 @@ MonoBehaviour:
         guid: 8199c8d422e11ba439476a66ee60675d
       type: 0
     - scene:
-        asset: {fileID: 102900000, guid: 2ed8279431211eb46be70dbbb1c7d01a, type: 3}
-        guid: 2ed8279431211eb46be70dbbb1c7d01a
+        asset: {fileID: 102900000, guid: 516c17abd2c89834fb5b12487a3edba0, type: 3}
+        guid: 516c17abd2c89834fb5b12487a3edba0
       type: 3
   _loadScreenView: {fileID: 8967079774407161492}
 --- !u!222 &5383647848533470540

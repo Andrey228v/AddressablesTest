@@ -2,6 +2,7 @@
 using Eflatun.SceneReference;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -43,7 +44,7 @@ namespace Assets._Scripts.Loader
             await ShowLoadScreen();
             await UnloadCurrentContent();
             await LoadNewContent(sceneGroup);
-            await PrepareToTransition();
+            await PrepareToTransition(sceneGroup);
             await HideLoadScreen();
 
         }
@@ -55,7 +56,9 @@ namespace Assets._Scripts.Loader
 
         private async UniTask UnloadCurrentContent()
         {
-            foreach (string key in _loadsScenes.Keys)
+            List<string> keys = _loadsScenes.Keys.ToList(); // Копия. Оказывается напрямую удалять нельзя ......
+
+            foreach (string key in keys)
             {
 
                 var handle = _loadsScenes[key];
@@ -66,12 +69,7 @@ namespace Assets._Scripts.Loader
                 });
 
                 await Addressables.UnloadSceneAsync(handle).ToUniTask(progress);
-                // фильтр по сценам, которые надо или не надо выгружать...
-                // тут необходимо ожидать выгрузку сцены
-
-                //await handle
-
-                //Addressables.Release(handle); // ??? ошибка вылетает из-за того что уничтожает тоже самое ...
+                _loadsScenes.Remove(key);
             }
 
             await Resources.UnloadUnusedAssets();
@@ -84,7 +82,9 @@ namespace Assets._Scripts.Loader
 
         private async UniTask LoadNewContent(SceneGroupHandle sceneGroup)
         {
-            foreach(SceneWrapper sceneWrapper in sceneGroup.scenesNames)
+            List<AsyncOperationHandle> loadHandles = new List<AsyncOperationHandle>();
+
+            foreach (SceneWrapper sceneWrapper in sceneGroup.scenesNames)
             {
                 SceneReference scene = sceneWrapper.scene;
                 AsyncOperationHandle handle = Addressables.LoadSceneAsync(scene.Address, LoadSceneMode.Additive);
@@ -92,12 +92,24 @@ namespace Assets._Scripts.Loader
                 await handle.ToUniTask();
 
                 _loadsScenes.Add(sceneWrapper.Name, handle);
+                loadHandles.Add(handle);
             }
+
+            await UniTask.WaitUntil(() =>
+                loadHandles.All(h => h.IsDone && h.Result != null));
+
+            // Дополнительная задержка для завершения внутренних процессов
+            await UniTask.Delay(2000);
         }
 
-        private async UniTask PrepareToTransition()
+        private async UniTask PrepareToTransition(SceneGroupHandle sceneGroup)
         {
+            string activeSceneName = sceneGroup.FindSceneNameByType(SceneType.Active);
 
+            SceneReference sceneRef = sceneGroup.FindScene(activeSceneName).scene;
+            Scene scene = SceneManager.GetSceneByName(sceneRef.Name);
+
+            SceneManager.SetActiveScene(scene);
         }
 
         private async UniTask HideLoadScreen()

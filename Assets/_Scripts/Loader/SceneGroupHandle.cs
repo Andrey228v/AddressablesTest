@@ -15,5 +15,11 @@ namespace Assets._Scripts.Loader
             // под вопросом
             return scenesNames.FirstOrDefault(scene => scene.type == sceneType).Name;
         }
+
+        //Надо изменить...
+        public SceneWrapper FindScene(string sceneName) 
+        {
+            return scenesNames.FirstOrDefault(scene => scene.Name == sceneName);
+        }
     }
 }

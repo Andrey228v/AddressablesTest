@@ -24,6 +24,20 @@ namespace Assets._Scripts.UI
             _scensGroups = scensGroups;
         }
 
+        private void Start()
+        {
+            _backButton.onClick.AddListener(BackToMenu);
+        }
+
+        private void OnDisable()
+        {
+            _backButton.onClick.RemoveAllListeners();
+        }
+
+        private async void BackToMenu()
+        {
+            await _loadManager.LoadScene(_scensGroups[0]);
+        }
 
     }
 }
