@@ -1,9 +1,5 @@
 ﻿using Assets._Scripts.Loader;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VContainer.Unity;
 
 namespace Assets._Scripts.EnteryPoints
@@ -11,15 +7,17 @@ namespace Assets._Scripts.EnteryPoints
     public class RootEnteryPoint : IStartable
     {
         private LoadManager _loadManager;
+        private List<SceneGroupHandle> _scensGroups;
 
-        public RootEnteryPoint(LoadManager loadManager) 
+        public RootEnteryPoint(LoadManager loadManager, List<SceneGroupHandle> scensGroups) 
         {
             _loadManager = loadManager;
+            _scensGroups = scensGroups;
         }
 
-        public void Start()
+        public async void Start()
         {
-            
+            await _loadManager.LoadScene(_scensGroups[0]);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets._Scripts.Loader
 {
@@ -8,5 +9,11 @@ namespace Assets._Scripts.Loader
     {
         public string groupName;
         public List<SceneWrapper> scenesNames;
+
+        public string FindSceneNameByType(SceneType sceneType)
+        {
+            // под вопросом
+            return scenesNames.FirstOrDefault(scene => scene.type == sceneType).Name;
+        }
     }
 }

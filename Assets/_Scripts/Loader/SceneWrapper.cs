@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Eflatun.SceneReference;
+using System;
 
 namespace Assets._Scripts.Loader
 {
@@ -17,8 +14,10 @@ namespace Assets._Scripts.Loader
 
     [Serializable]
     public struct SceneWrapper
-    {
-        public string sceneName;
-        public SceneType sceneType;
+    {   
+        
+        public SceneReference scene;
+        public string Name => scene.Name;
+        public SceneType type;
     }
 }

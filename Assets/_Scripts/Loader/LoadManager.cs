@@ -1,9 +1,11 @@
 ﻿using Cysharp.Threading.Tasks;
+using Eflatun.SceneReference;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.SceneManagement;
 
 
 namespace Assets._Scripts.Loader
@@ -11,12 +13,21 @@ namespace Assets._Scripts.Loader
     public class LoadManager : IDisposable
     {
         //List который содержит все загруженные сцены.
-        private List<AsyncOperationHandle> _loadsScenes; // ???
+        private Dictionary<string, AsyncOperationHandle> _loadsScenes; // ???
+        private LoadScreenView _loadScreenView;
+
+        public LoadManager(LoadScreenView loadScreenView)
+        {
+            _loadsScenes = new Dictionary<string, AsyncOperationHandle>();
+            _loadScreenView = loadScreenView;
+        }
 
         public void Dispose()
         {
-            foreach (var handle in _loadsScenes) 
+            foreach (string key in _loadsScenes.Keys) 
             {
+                var handle = _loadsScenes[key];
+
                 if (handle.IsValid())
                 {
                     Addressables.Release(handle);
@@ -26,7 +37,7 @@ namespace Assets._Scripts.Loader
             _loadsScenes.Clear();
         }
 
-        public async void LoadScene(SceneGroupHandle sceneGroup)
+        public async UniTask LoadScene(SceneGroupHandle sceneGroup)
         {
 
             await ShowLoadScreen();
@@ -39,31 +50,33 @@ namespace Assets._Scripts.Loader
 
         private async UniTask ShowLoadScreen()
         {
-
+            _loadScreenView.Show();
         }
 
         private async UniTask UnloadCurrentContent()
         {
-            foreach (var loadedSceneHandle in _loadsScenes)
+            foreach (string key in _loadsScenes.Keys)
             {
+
+                var handle = _loadsScenes[key];
 
                 var progress = Progress.Create<float>(p =>
                 {
                     Debug.Log($"Прогресс выгрузки: {p * 100:F0}%");
                 });
 
-                await Addressables.UnloadSceneAsync(loadedSceneHandle).ToUniTask(progress);
+                await Addressables.UnloadSceneAsync(handle).ToUniTask(progress);
                 // фильтр по сценам, которые надо или не надо выгружать...
                 // тут необходимо ожидать выгрузку сцены
 
                 //await handle
 
-                Addressables.Release(loadedSceneHandle); // ???
+                //Addressables.Release(handle); // ??? ошибка вылетает из-за того что уничтожает тоже самое ...
             }
 
             await Resources.UnloadUnusedAssets();
 
-            System.GC.Collect(); // надо ли это - пока не знаю. Тестим...
+            //System.GC.Collect(); // надо ли это - пока не знаю. Тестим...
 
             Debug.Log("Уровень полностью выгружен");
 
@@ -71,12 +84,15 @@ namespace Assets._Scripts.Loader
 
         private async UniTask LoadNewContent(SceneGroupHandle sceneGroup)
         {
-            foreach(var scene in sceneGroup.scenes)
+            foreach(SceneWrapper sceneWrapper in sceneGroup.scenesNames)
             {
-                //AsyncOperationHandle
-                await Addressables.LoadSceneAsync(scene).ToUniTask();
-            }
+                SceneReference scene = sceneWrapper.scene;
+                AsyncOperationHandle handle = Addressables.LoadSceneAsync(scene.Address, LoadSceneMode.Additive);
 
+                await handle.ToUniTask();
+
+                _loadsScenes.Add(sceneWrapper.Name, handle);
+            }
         }
 
         private async UniTask PrepareToTransition()
@@ -86,9 +102,7 @@ namespace Assets._Scripts.Loader
 
         private async UniTask HideLoadScreen()
         {
-
+            _loadScreenView.Hide();
         }
-
-
     }
 }
