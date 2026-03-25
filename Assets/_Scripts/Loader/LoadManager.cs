@@ -3,11 +3,9 @@ using Eflatun.SceneReference;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 
 namespace Assets._Scripts.Loader
@@ -45,6 +43,7 @@ namespace Assets._Scripts.Loader
 
         public async UniTask LoadScene(SceneGroupHandle sceneGroup)
         {
+            
 
             await ShowLoadScreen();
             await UnloadCurrentContent();
@@ -57,6 +56,7 @@ namespace Assets._Scripts.Loader
 
         private async UniTask ShowLoadScreen()
         {
+            _loadScreenView.SetProgress(0f);
             _loadScreenView.Show();
         }
 
@@ -87,39 +87,19 @@ namespace Assets._Scripts.Loader
             foreach (SceneWrapper sceneWrapper in sceneGroup.scenesNames)
             {
                 SceneReference scene = sceneWrapper.scene;
-                AsyncOperationHandle handle = Addressables.LoadSceneAsync(scene.Address, LoadSceneMode.Additive);
 
-                //var progress = Cysharp.Threading.Tasks.Progress.Create<float>(value =>
-                //{
-                //    // Этот код выполнится КАЖДЫЙ раз, когда вызовут progress.Report()
-                //    _loadingBar.value = value;        // Обновить слайдер
-                //    _loadingText.text = $"{value * 100:F0}%"; // Обновить текст
-                //    Debug.Log($"Прогресс: {value * 100:F0}%"); // Лог
-                //});
+                await UniTask.Delay(100);
+                AsyncOperationHandle handle = Addressables.LoadSceneAsync(scene.Address, LoadSceneMode.Additive);
 
                 _loadsScenes.Add(sceneWrapper.Name, handle);
                 _asyncOperationGroup.Add(handle);
 
                 _loadScreenView.SetStatus($"Загрузка сцены: {sceneWrapper.Name}");
-
-                await UniTask.Delay(1000);
             }
 
             await _asyncOperationGroup.WhenAll(_progress);
-            //await UniTask.WhenAll(loadTasks);
-
-            // Дополнительная задержка для завершения внутренних процессов
-            //await UniTask.Delay(2000);
 
             Debug.Log("1)_____WhenAll_______");
-
-            //int a = 5;
-
-            //await UniTask.WaitUntil(() =>
-            //    _loadsScenes.Values.All(h => h.IsDone && h.Result.Scene.isLoaded && a > 6));
-
-            //await UniTask.Delay(2000);
-
             Debug.Log("2)_____WAIT_UNTIL_______");
         }
 

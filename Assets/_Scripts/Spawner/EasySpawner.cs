@@ -1,20 +1,34 @@
-using Assets._Scripts.Enemy;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class EasySpawner : MonoBehaviour
 {
     [Min(0.1f)][SerializeField] private float _timeSpawn = 1f;
-    [SerializeField] private EnemyView _objectPrefab;
+    [SerializeField] private string _enemyKey = "Enemy"; // Addressables ключ
     [SerializeField] private Material _material;
     [SerializeField] private Transform _parentContainer;
 
     private CancellationTokenSource _cts;
+    private GameObject _enemyPrefab;
+    private AsyncOperationHandle<GameObject> _handleEnemy;
+    private List<GameObject> _enemies = new();
 
-    private void Start()
+    private async void Start()
     {
+        bool loaded =  await LoadEnemyPrefab();
+
+        if (loaded == false)
+        {
+            Debug.LogError("Не удалось загрузить префаб врага, спавнер отключён");
+            enabled = false;
+            return;
+        }
+
         StartSpawn();
     }
 
@@ -23,9 +37,32 @@ public class EasySpawner : MonoBehaviour
         // Отменяем цикл при уничтожении
         _cts?.Cancel();
         _cts?.Dispose();
+
+        foreach (var enemy in _enemies)
+        {
+            if (enemy != null)
+                Destroy(enemy);
+        }
+
+        Addressables.Release(_handleEnemy);
     }
 
-    private async void StartSpawn()
+    private async UniTask<bool> LoadEnemyPrefab()
+    {
+        _handleEnemy = Addressables.LoadAssetAsync<GameObject>(_enemyKey);
+        await _handleEnemy.Task;
+
+        if (_handleEnemy.Status != AsyncOperationStatus.Succeeded)
+        {
+            Debug.LogError($"Не удалось загрузить префаб: {_enemyKey}");
+            return false;
+        }
+
+        _enemyPrefab = _handleEnemy.Result;
+        return true;
+    }
+
+    private async UniTask StartSpawn()
     {
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
@@ -41,7 +78,14 @@ public class EasySpawner : MonoBehaviour
                     break;
                 }
 
-                EnemyView enemy = CreateObject();
+                if (_enemyPrefab == null)
+                {
+                    Debug.LogError("Префаб не загружен, спавн невозможен");
+                    break;
+                }
+
+                var enemy = CreateObject();
+                _enemies.Add(enemy);
                 Vector3 position = GetSpawnPosition();
                 enemy.gameObject.transform.position = position;
                 enemy.gameObject.transform.parent = _parentContainer;
@@ -71,10 +115,8 @@ public class EasySpawner : MonoBehaviour
         return position;
     }
 
-    private EnemyView CreateObject()
+    private GameObject CreateObject()
     {
-        return Instantiate(_objectPrefab);
+        return Instantiate(_enemyPrefab);
     }
-
-
 }
